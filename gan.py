@@ -7,7 +7,7 @@ device = "cuda" if torch.cuda.is_available() else "cpu"
 print("Using {} device".format(device))
 
 
-# Define model
+# Define discriminator model
 class Discriminator(pl.LightningModule):
     def __init__(self, channels, width, height, learning_rate):
         super().__init__()
@@ -18,14 +18,14 @@ class Discriminator(pl.LightningModule):
         self.learning_rate = learning_rate
 
         self.model = nn.Sequential(
-            nn.Conv2d(channels, 64, 3, stride=2, padding='same'),
+            nn.Conv2d(channels, 64, 3, stride=2, padding=1),
             nn.BatchNorm2d(64),
             nn.LeakyReLU(0.2),
-            nn.Conv2d(channels, 64, 3, stride=2, padding='same'),
+            nn.Conv2d(64, 64, 3, stride=2, padding=1),
             nn.BatchNorm2d(64),
             nn.LeakyReLU(0.2),
             nn.Flatten(),
-            nn.Linear(64 * width / 4 * height / 4, 1),
+            nn.Linear(int(64 * width / 4 * height / 4), 1),
         )
 
         self.loss_fn = nn.BCEWithLogitsLoss()
@@ -55,3 +55,29 @@ class Discriminator(pl.LightningModule):
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate, betas=(0.5, 0.999))
         return optimizer
+
+
+# define generator model
+class Generator(pl.LightningModule):
+    def __init__(self):
+        super().__init__()
+        self.model = nn.Sequential(
+            nn.Linear(100, 64 * 7 * 7),
+            nn.BatchNorm1d(64 * 7 * 7),
+            nn.LeakyReLU(0.2),
+            nn.Unflatten(1, (64, 7, 7)),
+
+            nn.ConvTranspose2d(64, 64, 3, stride=2, padding=1, output_padding=1),  # change padding to this later
+            nn.BatchNorm2d(64),
+            nn.LeakyReLU(0.2),
+
+            nn.ConvTranspose2d(64, 64, 3, stride=2, padding=1, output_padding=1),  # change padding on this later
+            nn.BatchNorm2d(64),
+            nn.LeakyReLU(0.2),
+            nn.Conv2d(64, 3, 3, padding=1)
+            # do tanh activation in validation step
+        )
+
+    def forward(self, x):
+        x = self.model(x)
+        return x

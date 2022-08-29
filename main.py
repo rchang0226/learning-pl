@@ -2,9 +2,11 @@ import os
 import pytorch_lightning as pl
 import torch.cuda
 from pytorch_lightning.callbacks.progress import TQDMProgressBar
+from torchinfo import summary
 
 import classifier
 import dataModule
+import gan
 
 
 def train_microsoft_on_mnist():
@@ -20,4 +22,5 @@ def train_microsoft_on_mnist():
 
 
 if __name__ == '__main__':
-    train_microsoft_on_mnist()
+    model = gan.Generator()
+    summary(model, input_size=(16, 100))
