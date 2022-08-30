@@ -185,4 +185,4 @@ fabric.properties
 
 # data files
 MNIST/
-
+lightning_logs/

@@ -22,6 +22,7 @@ class DataModule(pl.LightningDataModule):
 
         self.dims = (1, 28, 28)
         self.num_classes = 10
+        self.num_workers = os.cpu_count() // 2
 
     def prepare_data(self):
         datasets.MNIST(self.data_dir, train=True, download=True)
@@ -36,10 +37,10 @@ class DataModule(pl.LightningDataModule):
             self.test = datasets.MNIST(self.data_dir, train=False, transform=self.transform)
 
     def train_dataloader(self):
-        return DataLoader(self.train, batch_size=64)
+        return DataLoader(self.train, batch_size=64, num_workers=self.num_workers)
 
     def val_dataloader(self):
-        return DataLoader(self.val, batch_size=64)
+        return DataLoader(self.val, batch_size=64, num_workers=self.num_workers)
 
     def test_dataloader(self):
-        return DataLoader(self.test, batch_size=64)
+        return DataLoader(self.test, batch_size=64, num_workers=self.num_workers)

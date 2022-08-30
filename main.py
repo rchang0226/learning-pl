@@ -21,6 +21,17 @@ def train_microsoft_on_mnist():
     trainer.fit(model, data_module)
 
 
+def train_gan_on_mnist():
+    data_module = dataModule.DataModule(os.getcwd())
+    model = gan.GAN(*data_module.dims)
+    trainer = pl.Trainer(
+        accelerator="auto",
+        devices=1 if torch.cuda.is_available() else None,
+        max_epochs=5,
+        callbacks=[TQDMProgressBar(refresh_rate=20)]
+    )
+    trainer.fit(model, data_module)
+
+
 if __name__ == '__main__':
-    model = gan.Generator()
-    summary(model, input_size=(16, 100))
+    train_gan_on_mnist()
